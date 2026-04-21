@@ -1,1 +1,63 @@
-игра в телеге
+import telebot
+from telebot import types
+
+# Твой токен
+TOKEN = '8776423320:AAEwUqlunJqhT7nhCQlCfLFkrD4zPMRpOpQ'
+bot = telebot.TeleBot(TOKEN)
+
+# Словарь с описанием локаций по координатам (x, y)
+locations = {
+    (0, 0): "📍 Ты в Лагере. Здесь безопасно. Это центр карты.",
+    (0, 1): "🌲 Ты в Северном лесу. Вокруг высокие сосны.",
+    (0, -1): "🌲 Ты в Южном лесу. Здесь пахнет хвоей.",
+    (1, 0): "🌲 Ты в Восточном лесу. Слышно пение птиц.",
+    (-1, 0): "🌲 Ты в Западном лесу. Солнечные лучи едва пробиваются сквозь ветки.",
+    (-1, 1): "🏰 Ты у Заброшенной башни. Старые камни поросли мхом.",
+    (1, 1): "🌊 Ты у Реки. Вода здесь холодная и быстрая.",
+    (-1, -1): "⛏ Ты у Старой шахты. Оттуда веет холодом.",
+    (1, -1): "🦇 Ты у Пещеры. Глубокая тьма пугает случайных путников."
+}
+
+# Словарь для хранения позиций пользователей {user_id: [x, y]}
+user_pos = {}
+
+def get_keyboard():
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_n = types.KeyboardButton("North")
+    btn_s = types.KeyboardButton("South")
+    btn_w = types.KeyboardButton("West")
+    btn_e = types.KeyboardButton("East")
+    # Располагаем кнопки удобно
+    markup.row(btn_n)
+    markup.row(btn_w, btn_e)
+    markup.row(btn_s)
+    return markup
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    user_pos[message.chat.id] = [0, 0] # Начальная точка — Лагерь
+    bot.send_message(message.chat.id, "Добро пожаловать в игру! Твое приключение начинается.\n" + locations[(0, 0)], reply_markup=get_keyboard())
+
+@bot.message_handler(func=lambda message: message.text in ["North", "South", "West", "East"])
+def move(message):
+    if message.chat.id not in user_pos:
+        user_pos[message.chat.id] = [0, 0]
+
+    x, y = user_pos[message.chat.id]
+
+    # Логика перемещения
+    if message.text == "North" and y < 1: y += 1
+    elif message.text == "South" and y > -1: y -= 1
+    elif message.text == "East" and x < 1: x += 1
+    elif message.text == "West" and x > -1: x -= 1
+    else:
+        bot.send_message(message.chat.id, "Там непроходимая чаща, выбери другое направление!")
+        return
+
+    # Обновляем позицию и отправляем описание
+    user_pos[message.chat.id] = [x, y]
+    description = locations.get((x, y), "Ты заблудился в неизведанных землях...")
+    bot.send_message(message.chat.id, description, reply_markup=get_keyboard())
+
+bot.polling(none_stop=True)
+
