@@ -2,7 +2,7 @@ import telebot
 from telebot import types
 
 # Твой токен
-TOKEN = '8776423320:AAEwUqlunJqhT7nhCQlCfLFkrD4zPMRpOpQ'
+TOKEN = 'token'
 bot = telebot.TeleBot(TOKEN)
 
 # Словарь с описанием локаций по координатам (x, y)
