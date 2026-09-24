@@ -1,0 +1,17 @@
+# Запуск без Docker: скопируй в /etc/systemd/system/gamebot.service
+[Unit]
+Description=Telegram MMO RPG bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gamebot
+WorkingDirectory=/opt/gamebot
+EnvironmentFile=/opt/gamebot/.env
+ExecStart=/opt/gamebot/venv/bin/python bot.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
