@@ -1,7 +1,14 @@
 services:
   bot:
-    build: .
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-python:3.12-slim}
     restart: unless-stopped
+    # Публичные DNS: бот не зависит от резолвера хоста (на части серверов он сломан).
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     env_file: .env
     environment:
       DB_PATH: /data/game.db
